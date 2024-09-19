@@ -41,16 +41,30 @@ func NewSuccessfulResponse() SuccessfulResponse {
 }
 
 func (p *Presenter) GetData(ctx *gin.Context) {
-	fmt.Println("HEADER: ", ctx.GetHeader("If-Modified-Since"))
-	lastModifiedHeader := ctx.GetHeader("If-Modified-Since")
-	lastModified, err := http.ParseTime(lastModifiedHeader)
-	if err != nil {
-		logrus.Error("Problem parsing If-Modified-Since header ", err)
-		ctx.JSON(http.StatusBadRequest, NewBadRequestResponse())
-		return
-	}
-	fmt.Println(lastModified)
+    // Log the value of the If-Modified-Since header
+    ifModifiedSince := ctx.GetHeader("If-Modified-Since")
+    fmt.Println("HEADER: ", ifModifiedSince)
 
-	ctx.Header("Last-Modified", time.Now().String())
-	ctx.JSON(http.StatusOK, NewSuccessfulResponse())
+    // Attempt to parse the If-Modified-Since header
+    var lastModified time.Time
+    var err error
+    if ifModifiedSince != "" {
+        lastModified, err = http.ParseTime(ifModifiedSince)
+        if err != nil {
+            logrus.Errorf("Problem parsing If-Modified-Since header: %v", err)
+            ctx.JSON(http.StatusBadRequest, NewBadRequestResponse())
+            return
+        }
+    }
+
+    // For debugging purposes
+    if !lastModified.IsZero() {
+        fmt.Println(lastModified)
+    }
+
+    // Set Last-Modified header with the current time
+    ctx.Header("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+
+    // Respond with a successful response
+    ctx.JSON(http.StatusOK, NewSuccessfulResponse())
 }
