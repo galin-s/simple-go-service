@@ -1,8 +1,6 @@
 module github.com/nenov92/simple-go-service
 
-go 1.22.0
-
-toolchain go1.23.1
+go 1.23
 
 require (
 	github.com/gin-gonic/gin v1.10.0
